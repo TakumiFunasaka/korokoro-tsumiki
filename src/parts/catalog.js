@@ -69,7 +69,12 @@ const rampSide = (f) => {
 
 const parts = {};
 function def(id, o) {
-  parts[id] = { id, w: 1, d: 1, h: 1, shape: 'box', paths: [], cuts: [], ...o };
+  const p = { id, w: 1, d: 1, h: 1, shape: 'box', paths: [], cuts: [], ...o };
+  // 半分の高さで みぞのあるパーツは、うらがえして使える（トンネルの屋根にする・うらみぞを上にする）
+  if (p.flippable === undefined) {
+    p.flippable = p.h === 0.5 && p.shape === 'box' && p.paths.some((q) => q.kind !== 'tunnel') && !p.paths.some((q) => q.sink);
+  }
+  parts[id] = p;
 }
 
 // ============ standard ============
@@ -235,7 +240,9 @@ def('1/2', { h: H2 });
 def('R', { shape: 'cyl' });
 def('RO', { shape: 'cyl', h: H2 });
 def('RD', { shape: 'dome', h: H2 });
-def('A', { shape: 'wedge' });
+// A: 三角のくさび。斜面のまんなかに、奥行き方向の丸いみぞ（高さ 0.5 = 半分ブロックのみぞと同じ高さ）。
+// 実物はいろいろな向きに置いて使うが、ここでは この向き（底を下）だけ。
+def('A', { shape: 'wedge', paths: [G(line([0, H2, -0.5], [0, H2, 0.5]), { round: true })] });
 def('42L', funnel(LOW, ['S']));
 def('42R', funnel(LOW, ['N']));
 def('81', funnel(MID));
@@ -288,7 +295,7 @@ def('GW', {
 def('GCW', { h: H2, d: 2, paths: [wave(2, 1)] });
 def('GLW', { h: H2, d: 3, paths: [wave(3, 2)] });
 
-// SUB
+// SUB（うらがえして、うらみぞを上にしても使う）
 def('GX', { h: H2, paths: [gLine('N', 'S', H2), uLine('W', 'E')] });
 def('GKL', { h: H2, paths: [gLine('W', 'E', H2), uArc('S', 'E')] });
 def('GKR', { h: H2, paths: [gLine('W', 'E', H2), uArc('N', 'E')] });
@@ -306,28 +313,27 @@ def('GCM', { h: H2, d: 2, paths: [rail(2)], magnet: true });
 
 export const PARTS = parts;
 
-// セット（パレットのタブ）。色は UI 用
+// セット（パレットのタブ）。色は 公式の箱の色（箱の写真から読み取り）。
+// MAGNET は「磁石で宙に浮かせる」が再現できないので、タブから外している（パーツ定義は残してある）
 export const SETS = [
-  { id: 'standard', name: 'きほん', color: '#E8452C',
+  { id: 'standard', name: 'きほん', color: '#F3CC34',
     parts: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'MK'] },
-  { id: 'junior', name: 'ジュニア', color: '#7AC143',
+  { id: 'junior', name: 'ジュニア', color: '#92D34D',
     parts: ['1', '1/2', 'G', 'GC', 'GL', 'GG', 'K', 'KC', 'KL', 'X/2', 'FN', '3', '23W', '42', '42L', '42R', '91', 'M', 'R', 'RO', 'RD', 'A'] },
-  { id: 'speed', name: 'スピード', color: '#F5A800',
+  { id: 'speed', name: 'スピード', color: '#31C6E5',
     parts: ['14', '15', '16', '21', '22', '22W', '23', '24', '71'] },
-  { id: 'tunnel', name: 'トンネル', color: '#00A0B0',
+  { id: 'tunnel', name: 'トンネル', color: '#F26452',
     parts: ['12Y', '51', '61', '64', '67', '68', '69', '70', '103'] },
-  { id: 'duo', name: 'デュオ', color: '#D6338A',
+  { id: 'duo', name: 'デュオ', color: '#00D49C',
     parts: ['D3', 'D5', 'D7', 'D8', 'D9', 'D15', 'D16', 'D22', '42'] },
-  { id: 'trick', name: 'トリック', color: '#7B4BB7',
+  { id: 'trick', name: 'トリック', color: '#FD7F19',
     parts: ['11T', '13L', '13R', '27', '28', '29', '54', '55', '56', '92', '114'] },
-  { id: 'pro', name: 'プロ', color: '#2B5CB8',
+  { id: 'pro', name: 'プロ', color: '#0097E9',
     parts: ['11V', '25', '26', '30', '35', '36', '43', '45', '46', '77', '78'] },
-  { id: 'wave', name: 'ウェーブ', color: '#2FB5E8',
+  { id: 'wave', name: 'ウェーブ', color: '#01D0D6',
     parts: ['GW', 'GCW', 'GLW', 'KWL', 'KWR', '23W', 'K', 'FN', '1/2', 'M'] },
-  { id: 'sub', name: 'サブ', color: '#8A6F4E',
+  { id: 'sub', name: 'サブ', color: '#F89375',
     parts: ['GX', 'GKL', 'GKR', 'GCK', 'GU', '11T', '1/2', 'M'] },
-  { id: 'jump', name: 'ジャンプ', color: '#F26B8A',
+  { id: 'jump', name: 'ジャンプ', color: '#AB8CD4',
     parts: ['MJ', '81', '22', '23W', 'R', '1/2', 'M'] },
-  { id: 'magnet', name: 'マグネット', color: '#C8102E',
-    parts: ['11M', '12M', 'GM', 'GCM', 'R', 'RO', '1/2', 'M'] },
 ];

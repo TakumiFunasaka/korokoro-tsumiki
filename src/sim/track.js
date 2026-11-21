@@ -25,14 +25,16 @@ export function buildTrack(pieces) {
     solids.push({ ...box, piece, bounce: !!def.bounce });
     def.paths.forEach((pd, idx) => {
       const pts = pd.pts.map((p) => localToWorld(piece, p));
-      if (pd.kind === 'under') {
+      // うらがえしたパーツは、うらみぞが上のみぞに、上のみぞが うらみぞになる
+      const kind = !piece.flip ? pd.kind : pd.kind === 'under' ? 'groove' : pd.kind === 'groove' ? 'under' : pd.kind;
+      if (kind === 'under') {
         unders.push({ piece, pts });
         return;
       }
       const cum = [0];
       for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + len(sub(pts[i], pts[i - 1])));
       const path = {
-        id: paths.length, piece, idx, kind: pd.kind, r: pd.r, pts, cum, len: cum[cum.length - 1],
+        id: paths.length, piece, idx, kind, r: pd.r, pts, cum, len: cum[cum.length - 1],
         hole: !!pd.hole, sink: !!pd.sink, funnel: pd.funnel || 0, ramp: !!pd.ramp,
         open: [isOpenEnd(pts[0], box), isOpenEnd(pts[pts.length - 1], box)],
         blocked: null,

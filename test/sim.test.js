@@ -268,4 +268,41 @@ describe('とくべつなパーツ', () => {
       }
     }
   });
+
+  it('玉うけ（M / MK）は 上から落ちてきた玉を 口の広さで受けとめる', () => {
+    for (const id of ['M', 'MK']) {
+      const ps = put([[id, 0, 0]]);
+      const track = buildTrack(ps);
+      // まんなかから少しずれた所へ、ななめに落とす
+      const m = makeMarble([0.3, 2, 0.62]);
+      m.vel = [2, 0, -1];
+      for (let i = 0; i < 3000 && m.mode !== 'rest'; i++) stepMarble(m, track, 1 / 120);
+      expect(m.reason).toBe('goal');
+    }
+  });
+
+  it('ジャンプ: 22 から落ちて MJ ではね、その先の M に入る', () => {
+    const ps = put([['1', 0, 0], ['22', 0, 0], ['MJ', 0, 1], ['M', 0, 3]]);
+    const m = run(ps, [0.5, 3, 0.12], [0.5, 1, 0.5]);
+    expect(m.reason).toBe('goal');
+  });
+
+  it('GX を うらがえすと、うらみぞ（横向き）が 上のみぞになる', () => {
+    // そのまま: 上のみぞは 前後(N-S)。うらがえし: 上のみぞは 左右(E-W)
+    const a = put([['GX', 0, 0]]);
+    const ta = buildTrack(a);
+    expect(ta.paths.length).toBe(1);
+    expect(Math.abs(ta.paths[0].pts[0][2] - ta.paths[0].pts.at(-1)[2])).toBeGreaterThan(0.9);
+    a[0].flip = true;
+    const tb = buildTrack(a);
+    expect(tb.paths.length).toBe(1);
+    expect(tb.paths[0].kind).toBe('groove');
+    expect(Math.abs(tb.paths[0].pts[0][0] - tb.paths[0].pts.at(-1)[0])).toBeGreaterThan(0.9);
+    expect(tb.paths[0].pts[0][1]).toBeCloseTo(0.5);
+    // 左右のレールとつながって 玉が通る
+    const ps = put([['G', 0, 0, 1], ['GX', 1, 0], ['G', 2, 0, 1], ['M', 3, 0]]);
+    ps[1].flip = true;
+    const m = run(ps, [0.15, 0.5, 0.5], [0.5, 0, 0.5]);
+    expect(m.reason).toBe('goal');
+  });
 });

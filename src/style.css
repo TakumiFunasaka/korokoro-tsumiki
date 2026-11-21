@@ -81,6 +81,8 @@ button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(58, 42, 26,
 .act .lb { font-size: 17px; }
 .act.rot { background: var(--teal); }
 .act.del { background: var(--red); }
+.act.flip { background: var(--pink); width: 136px; }
+.act[hidden] { display: none; }
 
 /* おしらせ */
 .toast {
@@ -119,7 +121,7 @@ button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(58, 42, 26,
 .tabs { padding: 2px 2px 8px; }
 .tab {
   flex: none; height: 40px; padding: 0 16px; border-radius: 999px; font-size: 16px; color: #fff;
-  background: var(--c); opacity: 0.45; box-shadow: none; flex-direction: row;
+  background: var(--c); opacity: 0.6; box-shadow: none; flex-direction: row;
 }
 .tab.on { opacity: 1; box-shadow: var(--shadow); }
 .items { padding: 2px 2px 6px; }
@@ -139,7 +141,7 @@ button:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(58, 42, 26,
 .card { background: #fff; border-radius: 28px; padding: 20px; width: min(88vw, 380px); display: flex; flex-direction: column; gap: 12px; }
 .card h2 { margin: 0 0 4px; text-align: center; font-size: 24px; }
 .wide { height: 60px; font-size: 20px; color: #fff; flex-direction: row; }
-.c0 { background: #a89a86; } .c1 { background: var(--green); } .c2 { background: var(--blue); } .c3 { background: var(--red); }
+.c0 { background: #a89a86; } .c4 { background: var(--teal); } .c1 { background: var(--green); } .c2 { background: var(--blue); } .c3 { background: var(--red); }
 .note { font-size: 11px; font-weight: 400; opacity: 0.7; margin: 4px 0 0; line-height: 1.5; }
 
 /* せまい画面 */

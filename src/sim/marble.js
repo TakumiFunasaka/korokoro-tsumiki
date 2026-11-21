@@ -208,13 +208,18 @@ function stepFree(m, track, h) {
       const dx = q[0] - m.pos[0], dz = q[2] - m.pos[2];
       const hd = Math.hypot(dx, dz);
       const dy = m.pos[1] - (q[1] - SEAT);
-      if (path.funnel && i === 0) {
-        if (hd < path.funnel && dy > -0.12 && dy < 0.2) best = { path, i, hd: -1 };
+      // じょうご・玉うけ（M / MK）は、口の広さぶん 受けとめる
+      const mouth = path.funnel || (path.sink ? 0.33 : 0);
+      if (mouth && i === 0) {
+        // （まわりのみぞより先に受けるよう、高さの幅を広めにとる）
+        if (hd < mouth && dy > -0.12 && dy < 0.32) best = { path, i, hd: -1 };
         return;
       }
       if (path.kind !== 'groove') return;
       if (path.blocked && path.blocked[i]) return;
-      if (hd < 0.17 && dy > -0.12 && dy < 0.22 && (!best || hd < best.hd)) best = { path, i, hd };
+      // 上から落ちてきた玉は、みぞの幅より少し広めに受ける（ふちに当たって ころがりこむ）
+      const reach = m.vel[1] < -3 ? 0.24 : 0.17;
+      if (hd < reach && dy > -0.12 && dy < 0.22 && (!best || hd < best.hd)) best = { path, i, hd };
     });
     if (best) {
       const path = best.path;
@@ -225,7 +230,7 @@ function stepFree(m, track, h) {
       m.mode = 'path';
       m.path = path.id;
       m.s = path.cum[best.i];
-      m.v = path.funnel && best.i === 0 ? Math.max(1.5, hyp(m.vel) * 0.3) : dot(m.vel, t) * 0.9;
+      m.v = (path.funnel || path.sink) && best.i === 0 ? Math.max(1.5, hyp(m.vel) * 0.3) : dot(m.vel, t) * 0.9;
       if (m.fresh) {
         m.fresh = false;
         // 置いた直後で、ほぼ平らなら ひと押し
@@ -253,7 +258,9 @@ function stepFree(m, track, h) {
       // 上にのった
       p[1] = s.maxy + R;
       if (s.bounce && m.vel[1] < -1) {
-        m.vel[1] = -m.vel[1] * 0.86; // トランポリン
+        // トランポリン: 高くはねる。ゴムが勢いを少し吸うので、前へ進む速さは少し落ちる
+        m.vel[1] = -m.vel[1] * 0.8;
+        m.vel[0] *= 0.85; m.vel[2] *= 0.85;
       } else {
         m.vel[1] = m.vel[1] < -6 ? -m.vel[1] * 0.25 : 0;
         const k = Math.max(0, 1 - 3 * h);

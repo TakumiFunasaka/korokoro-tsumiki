@@ -192,27 +192,12 @@ function targetFor(type, rot, hit, excludeId = null) {
     else if (Math.abs(n[0]) >= Math.abs(n[2])) { hx = n[0] > 0 ? q.hx + footprint(q).fw : q.hx - fw; hz = az; }
     else { hz = n[2] > 0 ? q.hz + footprint(q).fd : q.hz - fd; hx = ax; }
   } else {
-    // つくえの上: ふつうは 1マスごと。長さ 1.5 のレールのとなりなどは、
-    // 半マスずらすと ぴったりくっつくなら そちらをえらぶ。
-    let best = null;
-    for (const cx of [2 * Math.floor(px), 2 * Math.floor(px - 0.5) + 1]) {
-      for (const cz of [2 * Math.floor(pz), 2 * Math.floor(pz - 0.5) + 1]) {
-        const t = { id: -1, type, rot, hx: cx, hz: cz, y: 0 };
-        let overlap = false, flush = false;
-        for (const o of state.pieces) {
-          if (o.id === excludeId) continue;
-          const f = footprint(o);
-          const ox = cx < o.hx + f.fw && o.hx < cx + fw, oz = cz < o.hz + f.fd && o.hz < cz + fd;
-          if (ox && oz) overlap = true;
-          else if (o.y < 0.01 && ((oz && (cx === o.hx + f.fw || cx + fw === o.hx)) || (ox && (cz === o.hz + f.fd || cz + fd === o.hz)))) flush = true;
-        }
-        const odd = (cx & 1) + (cz & 1);
-        const score = (overlap ? 100 : 0) + odd - (flush ? 2 : 0) + (odd && !flush ? 50 : 0);
-        if (!best || score < best.score) best = { score, t };
-      }
-    }
-    hx = best.t.hx; hz = best.t.hz;
+    hx = 2 * Math.floor(px);
+    hz = 2 * Math.floor(pz);
   }
+  // 横の位置は いつも 1マス単位（半マスずらしても つながる道はないので、ずらせない）
+  hx = 2 * Math.round(hx / 2);
+  hz = 2 * Math.round(hz / 2);
   hx = Math.max(-BOARD, Math.min(BOARD - fw, hx));
   hz = Math.max(-BOARD, Math.min(BOARD - fd, hz));
   probe.hx = hx; probe.hz = hz;
@@ -330,6 +315,7 @@ function updateDrag(e) {
     chip.hidden = !!spot;
   } else {
     const t = targetFor(drag.type, drag.rot, hit, drag.kind === 'move' ? drag.pieceId : null);
+    if (t && drag.kind === 'move') t.flip = !!pieceById(drag.pieceId)?.flip;
     drag.target = t;
     view.showGhost(t);
     view.showPad(t);
@@ -499,6 +485,8 @@ function updateHint() {
 
 function updateUi() {
   $('actions').hidden = state.selected == null || !!drag;
+  const sel = pieceById(state.selected);
+  $('act-flip').hidden = !(sel && PARTS[sel.type].flippable);
   $('btn-go').disabled = !state.starts.length;
   $('btn-xray').setAttribute('aria-pressed', String(state.xray));
   $('speed-ic').textContent = state.slow ? '🐢' : '🐇';
@@ -514,6 +502,9 @@ function buildPalette() {
     const b = document.createElement('button');
     b.className = 'tab' + (s.id === state.set ? ' on' : '');
     b.style.setProperty('--c', s.color);
+    // 明るい色のタブは 文字をこくする
+    const [r, g, bl] = [1, 3, 5].map((i) => parseInt(s.color.slice(i, i + 2), 16));
+    if (0.299 * r + 0.587 * g + 0.114 * bl > 165) b.style.color = '#3a2a1a';
     b.textContent = s.name;
     b.addEventListener('click', () => { state.set = s.id; buildPalette(); save(); });
     tabs.appendChild(b);
@@ -553,6 +544,13 @@ function buildPalette() {
 
 $('act-rot').addEventListener('click', rotateSelected);
 $('act-del').addEventListener('click', () => state.selected != null && removePiece(state.selected));
+$('act-flip').addEventListener('click', () => {
+  const p = pieceById(state.selected);
+  if (!p || !PARTS[p.type].flippable) return;
+  pushUndo();
+  p.flip = !p.flip;
+  changed();
+});
 $('btn-go').addEventListener('click', replay);
 $('btn-clear-marbles').addEventListener('click', () => { clearMarbles(true); updateUi(); save(); });
 $('btn-xray').addEventListener('click', () => { state.xray = !state.xray; view.setXray(state.xray); buildPalette(); save(); });
@@ -575,6 +573,36 @@ $('m-demo').addEventListener('click', () => {
   view.home();
 });
 $('m-trail').addEventListener('click', () => { state.trail = !state.trail; view.setTrail(state.trail); updateUi(); save(); });
+// コースをリンクにする（別の端末で開く・人に送る用）。中身は URL の # 以降に入るだけで、どこにも送らない
+function courseLink() {
+  const json = JSON.stringify({ p: serialize(state.pieces), s: state.starts });
+  const code = btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return location.origin + location.pathname + '#c=' + code;
+}
+function loadFromLink() {
+  const m = /^#c=([\w-]+)$/.exec(location.hash);
+  if (!m) return false;
+  try {
+    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    const d = JSON.parse(decodeURIComponent(escape(atob(b64))));
+    const ps = deserialize(d.p);
+    if (!ps.length) return false;
+    state.pieces = ps;
+    state.starts = (Array.isArray(d.s) ? d.s : [])
+      .filter((q) => q && Array.isArray(q.at) && q.at.length === 3 && q.at.every(Number.isFinite)).slice(-MAX_MARBLES);
+    history.replaceState(null, '', location.pathname + location.search);
+    return true;
+  } catch { return false; }
+}
+$('m-share').addEventListener('click', async () => {
+  const url = courseLink();
+  $('menu').hidden = true;
+  try {
+    if (navigator.share) { await navigator.share({ title: 'ころころ つみき', url }); return; }
+  } catch { /* やめた・使えない → コピーへ */ }
+  try { await navigator.clipboard.writeText(url); flashHint('リンクを コピーしたよ'); }
+  catch { window.prompt('このリンクを コピーしてね', url); }
+});
 $('m-wipe').addEventListener('click', () => { $('menu').hidden = true; $('confirm').hidden = false; });
 $('c-no').addEventListener('click', () => { $('confirm').hidden = true; });
 $('c-yes').addEventListener('click', () => {
@@ -626,8 +654,12 @@ function frame(now) {
 if (debugGrid) {
   const set = SETS.find((s) => s.id === debugGrid) || SETS[0];
   const cols = +params.get('cols') || 5;
-  state.pieces = set.parts.map((type, i) => makePiece(type, Math.round(((i % cols) - (cols - 1) / 2) * 2) * 2, (Math.floor(i / cols) - 1) * 6, +params.get('rot') || 0));
+  // &only=A,GX で そのパーツだけ、&flip=1 で うらがえして並べる
+  const types = params.get('only') ? params.get('only').split(',').filter((t) => PARTS[t]) : set.parts;
+  state.pieces = types.map((type, i) => makePiece(type, Math.round(((i % cols) - (cols - 1) / 2) * 2) * 2, (Math.floor(i / cols) - 1) * 6, +params.get('rot') || 0, params.get('flip') === '1'));
   state.set = set.id;
+} else if (loadFromLink()) {
+  // リンクのコースを使う（保存してあるコースは読まない）
 } else if (params.get('demo') || !load() || !state.pieces.length) loadDemo();
 if (params.get('demo') === 'wall') { state.pieces[state.pieces.length - 1].type = '1'; }
 if (params.get('xray')) state.xray = params.get('xray') === '1';

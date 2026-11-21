@@ -5,8 +5,8 @@ import { rotPoint } from '../parts/dsl.js';
 
 let nextId = 1;
 
-export function makePiece(type, hx, hz, rot = 0) {
-  return { id: nextId++, type, hx, hz, rot: ((rot % 4) + 4) % 4, y: 0 };
+export function makePiece(type, hx, hz, rot = 0, flip = false) {
+  return { id: nextId++, type, hx, hz, rot: ((rot % 4) + 4) % 4, y: 0, flip: !!flip && !!PARTS[type].flippable };
 }
 
 /** 回転後の大きさ（半マス単位）*/
@@ -28,6 +28,8 @@ export function height(piece) {
 
 export function localToWorld(piece, p) {
   const c = center(piece);
+  // うらがえし: 横の軸まわりに半回転（上下が入れかわり、前後も入れかわる）
+  if (piece.flip) p = [p[0], PARTS[piece.type].h - p[1], -p[2]];
   const q = rotPoint(p, piece.rot);
   return [q[0] + c[0], q[1] + c[1], q[2] + c[2]];
 }
@@ -73,15 +75,16 @@ export function aabb(piece) {
 }
 
 export function serialize(pieces) {
-  return pieces.map((p) => [p.type, p.hx, p.hz, p.rot, p.y]);
+  return pieces.map((p) => (p.flip ? [p.type, p.hx, p.hz, p.rot, p.y, 1] : [p.type, p.hx, p.hz, p.rot, p.y]));
 }
 
 export function deserialize(data) {
   const out = [];
   for (const row of data || []) {
-    const [type, hx, hz, rot, y] = row;
+    const [type, hx, hz, rot, y, flip] = row;
     if (!PARTS[type]) continue;
-    const p = makePiece(type, hx | 0, hz | 0, rot | 0);
+    // 横の位置は 1マス単位（昔の保存データに半マスずれがあれば そろえる）
+    const p = makePiece(type, 2 * Math.round(hx / 2), 2 * Math.round(hz / 2), rot | 0, !!flip);
     p.y = +y || 0;
     out.push(p);
   }

@@ -50,7 +50,7 @@ function build(def) {
   const cutters = [];
   for (const p of def.paths) {
     if (p.hidden) continue;
-    cutters.push(sweep(p.pts, p.kind === 'groove' ? 'groove' : 'tube', p.r, def));
+    cutters.push(sweep(p.pts, p.kind === 'groove' && !p.round ? 'groove' : 'tube', p.r, def));
   }
   for (const c of def.cuts) {
     const g = new THREE.CylinderGeometry(c.r0 ?? c.r, c.r1 ?? c.r, c.y1 - c.y0, 36);

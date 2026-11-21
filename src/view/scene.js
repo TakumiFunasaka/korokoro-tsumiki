@@ -122,6 +122,10 @@ export function createScene(canvas) {
     const c = center(piece);
     obj.position.set(c[0], c[1], c[2]);
     obj.rotation.y = (piece.rot * Math.PI) / 2;
+    // うらがえし: 形そのものを 横の軸まわりに半回転
+    const mesh = obj.userData.mesh;
+    mesh.rotation.x = piece.flip ? Math.PI : 0;
+    mesh.position.y = piece.flip ? PARTS[piece.type].h : 0;
   }
 
   // --- 置いたパーツ ---
