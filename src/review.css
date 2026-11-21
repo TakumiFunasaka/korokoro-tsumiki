@@ -1,0 +1,32 @@
+:root { --ink: #2f2418; --line: #e6d6b4; --bg: #fffaf0; --red: #e8452c; --blue: #1f6fd6; --green: #4f9a22; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.6 "Hiragino Sans", "Yu Gothic", system-ui, sans-serif; }
+header { position: sticky; top: 0; z-index: 2; background: #fff; border-bottom: 2px solid var(--line); padding: 10px 16px; }
+h1 { margin: 0; font-size: 20px; }
+header p { margin: 4px 0 8px; font-size: 13px; max-width: 1100px; }
+.bar { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; font-size: 14px; }
+#saved { color: var(--green); }
+main { padding: 16px; display: grid; gap: 16px; max-width: 1500px; margin: 0 auto; }
+.part { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.part.ok { border-color: #a9d68b; }
+.part.ng { border-color: var(--red); }
+.part.unk { border-color: #c9b98f; }
+.head { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; }
+.head h2 { margin: 0; font-size: 22px; }
+.head .sets { font-size: 13px; opacity: 0.7; }
+.q { background: #fff3c9; border-left: 5px solid #f5a800; padding: 6px 10px; margin: 8px 0; border-radius: 6px; font-size: 14px; }
+.views { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; align-items: flex-start; }
+figure { margin: 0; text-align: center; font-size: 12px; }
+figure .box { width: 200px; height: 200px; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+figure img { width: 200px; height: 200px; display: block; }
+.chart { width: 200px; height: 200px; background-repeat: no-repeat; flex: none; }
+.nochart { font-size: 12px; opacity: 0.6; padding: 8px; }
+.desc { font-size: 13px; margin: 6px 0; padding-left: 18px; }
+.desc li { margin: 1px 0; }
+.k-g { color: var(--red); } .k-t { color: var(--blue); } .k-u { color: var(--green); }
+.judge { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin-top: 6px; }
+.judge button { font: inherit; padding: 8px 16px; border-radius: 999px; border: 2px solid var(--line); background: #fff; cursor: pointer; }
+.judge button.on[data-v="ok"] { background: #7ac143; border-color: #7ac143; color: #fff; }
+.judge button.on[data-v="ng"] { background: var(--red); border-color: var(--red); color: #fff; }
+.judge button.on[data-v="unk"] { background: #a89a86; border-color: #a89a86; color: #fff; }
+.judge textarea { flex: 1; min-width: 260px; min-height: 44px; font: inherit; padding: 8px; border: 2px solid var(--line); border-radius: 10px; }

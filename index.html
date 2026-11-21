@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFF4DC">
+  <title>ころころ つみき</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <canvas id="view"></canvas>
+
+  <!-- 上: うごかす -->
+  <div class="bar top">
+    <button id="btn-go" class="big go" aria-label="たまを ころがす"><span class="ic">▶</span><span class="lb">もういちど</span></button>
+    <button id="btn-clear-marbles" class="rnd" aria-label="たまを かたづける"><span class="ic">⟲</span><span class="lb">たまを けす</span></button>
+    <div class="sp"></div>
+    <button id="btn-xray" class="rnd" aria-pressed="false"><span class="ic">👁</span><span class="lb">なかを みる</span></button>
+    <button id="btn-speed" class="rnd"><span class="ic" id="speed-ic">🐢</span><span class="lb" id="speed-lb">ゆっくり</span></button>
+    <button id="btn-undo" class="rnd"><span class="ic">↩</span><span class="lb">もどす</span></button>
+    <button id="btn-menu" class="rnd"><span class="ic">☰</span><span class="lb">メニュー</span></button>
+  </div>
+
+  <!-- 左: たま（ここから ひっぱりだす）-->
+  <div class="tools">
+    <button id="src-marble" class="tool src"><span class="ic"><i class="ball"></i></span><span class="lb">たま</span></button>
+  </div>
+
+  <!-- 右: カメラ -->
+  <div class="cam">
+    <button id="cam-in" aria-label="ちかづく">＋</button>
+    <button id="cam-out" aria-label="はなれる">－</button>
+    <button id="cam-home" aria-label="もとの むき">⌂</button>
+  </div>
+  <div class="stick" id="stick" aria-label="カメラを まわす"><i id="knob"></i></div>
+
+  <!-- ひっぱっている間の しるし -->
+  <img id="chip" class="chip" alt="" hidden>
+  <div id="bin" class="bin" hidden>ここで はなすと かたづける</div>
+
+  <!-- えらんだパーツの そうさ -->
+  <div class="actions" id="actions" hidden>
+    <button id="act-rot" class="act rot"><span class="ic">↻</span><span class="lb">まわす</span></button>
+    <button id="act-del" class="act del"><span class="ic">✖</span><span class="lb">けす</span></button>
+  </div>
+
+  <!-- おしらせ -->
+  <div class="toast" id="toast" hidden><span class="t-ic" id="toast-ic"></span><div><b id="toast-title"></b><small id="toast-sub"></small></div></div>
+  <div class="hint" id="hint"></div>
+
+  <!-- 下: パーツ -->
+  <div class="palette">
+    <div class="tabs" id="tabs"></div>
+    <div class="items" id="items"></div>
+  </div>
+
+  <!-- メニュー -->
+  <div class="sheet" id="menu" hidden>
+    <div class="card">
+      <h2>メニュー</h2>
+      <button id="m-demo" class="wide c1">おてほんを だす</button>
+      <button id="m-trail" class="wide c2">とおった みち： みせる</button>
+      <button id="m-wipe" class="wide c3">ぜんぶ けす</button>
+      <button id="m-close" class="wide c0">とじる</button>
+      <p class="note">おうちの方へ：木製玉の道あそびを参考にした非公式のシミュレーターです。パーツの形は公開されている一覧図から読み取った近似で、実物と動きが異なる場合があります。</p>
+    </div>
+  </div>
+  <div class="sheet" id="confirm" hidden>
+    <div class="card">
+      <h2>ぜんぶ けして いい？</h2>
+      <button id="c-yes" class="wide c3">けす</button>
+      <button id="c-no" class="wide c0">やめる</button>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

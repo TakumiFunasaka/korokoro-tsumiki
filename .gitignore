@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_Store
+# 公式サイトの図（参照用・再配布しない）
+docs/research/official-charts/
+reports/

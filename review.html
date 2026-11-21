@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>パーツのレビュー</title>
+  <link rel="stylesheet" href="./src/review.css">
+</head>
+<body>
+  <header>
+    <h1>パーツのレビュー</h1>
+    <p>左が公式の図、右がシミュレーターの形です。青い線＝中のトンネル、赤い線＝上面の溝、緑の線＝下面のうら溝（玉は通らない）。「前から」「右から」の図で傾きを見てください。判定とメモは自動で保存され、こちらで読めます。</p>
+    <div class="bar">
+      <span id="count"></span>
+      <label><input type="checkbox" id="only-open"> まだ判定していないものだけ</label>
+      <label><input type="checkbox" id="only-q"> 質問があるものだけ</label>
+      <span id="saved"></span>
+    </div>
+  </header>
+  <main id="list"></main>
+  <script type="module" src="./src/review.js"></script>
+</body>
+</html>
